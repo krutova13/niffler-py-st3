@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, StrictFloat
 
 
 class Category(BaseModel):
@@ -13,6 +13,6 @@ class SpendResponse(BaseModel):
     spendDate: str
     category: Category
     currency: str
-    amount: float
+    amount: StrictFloat
     description: str
     username: str

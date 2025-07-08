@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, StrictInt
 
 from models.spend_create_response import SpendResponse
 
@@ -10,23 +10,23 @@ class Sort(BaseModel):
 
 
 class Pageable(BaseModel):
-    pageNumber: int
-    pageSize: int
+    pageNumber: StrictInt
+    pageSize: StrictInt
     sort: Sort
-    offset: int
+    offset: StrictInt
     paged: bool
     unpaged: bool
 
 
 class SpendListResponse(BaseModel):
     content: list[SpendResponse]
-    number: int
-    size: int
-    totalElements: int
+    number: StrictInt
+    size: StrictInt
+    totalElements: StrictInt
     pageable: Pageable
     last: bool
-    totalPages: int
+    totalPages: StrictInt
     sort: Sort
     first: bool
-    numberOfElements: int
+    numberOfElements: StrictInt
     empty: bool

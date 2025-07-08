@@ -41,6 +41,7 @@ class ProfilePage(BasePage):
 
     def add_category(self, category: str):
         self.add_category_input.fill(category)
+        self.add_category_input.press("Enter")
         self.category_chips.filter(has_text=category).first.wait_for(state="visible", timeout=3000)
 
     def get_categories(self) -> list[str]:

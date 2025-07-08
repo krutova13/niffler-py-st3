@@ -34,7 +34,7 @@ poetry install
 ### 2. Установка браузеров Playwright
 
 ```bash
-poetry run playwright install
+poetry run playwright install chromium
 ```
 
 ### 3. Настройка переменных окружения
