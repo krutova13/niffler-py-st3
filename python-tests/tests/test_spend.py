@@ -3,27 +3,6 @@ from pages.spending.add_spending_page import AddSpendingPage
 from pages.spending.edit_spending_page import EditSpendingPage
 
 
-def test_create_new_spending(page_factory, login):
-    amount: str = "500"
-    category: str = "Транспорт"
-    date: list = ["03/06/2025", "Mar 06, 2025"]
-    description: str = "Тест"
-
-    main_page: MainPage = page_factory(MainPage)
-    main_page.goto()
-    main_page.create_new_spending()
-    add_spending_page: AddSpendingPage = page_factory(AddSpendingPage)
-    add_spending_page.fill_amount(amount)
-    add_spending_page.fill_category(category)
-    add_spending_page.fill_date(date[0])
-    add_spending_page.fill_description(description)
-    add_spending_page.save()
-    assert main_page.is_last_spending_amount(expected=amount)
-    assert main_page.is_last_spending_category(category)
-    assert main_page.is_last_spending_description(description)
-    assert main_page.is_last_spending_date(date[1])
-
-
 def test_edit_spending_amount(page_factory, login, created_spend):
     amount: str = "2000"
     main_page: MainPage = page_factory(MainPage)
@@ -66,6 +45,27 @@ def test_search_spending(page_factory, login, created_spend):
     main_page.clear_search()
     main_page.search(not_valid_search)
     assert main_page.is_no_spendings_placeholder_visible()
+
+
+def test_create_new_spending(page_factory, login):
+    amount: str = "500"
+    category: str = "Транспорт"
+    date: list = ["03/06/2020", "Mar 06, 2020"]
+    description: str = "Тест"
+
+    main_page: MainPage = page_factory(MainPage)
+    main_page.goto()
+    main_page.create_new_spending()
+    add_spending_page: AddSpendingPage = page_factory(AddSpendingPage)
+    add_spending_page.fill_amount(amount)
+    add_spending_page.fill_category(category)
+    add_spending_page.fill_date(date[0])
+    add_spending_page.fill_description(description)
+    add_spending_page.save()
+    assert main_page.is_last_spending_amount(expected=amount)
+    assert main_page.is_last_spending_category(category)
+    assert main_page.is_last_spending_description(description)
+    assert main_page.is_last_spending_date(date[1])
 
 
 def test_delete_all_spendings(page_factory, login, created_spend):

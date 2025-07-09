@@ -1,9 +1,7 @@
 import os
 from http import HTTPStatus
-from typing import Type
 
 import dotenv
-from playwright.sync_api import sync_playwright, Page
 
 dotenv.load_dotenv()
 
@@ -18,14 +16,6 @@ from models.spend_create_response import SpendResponse
 from pages.base_page import BasePage
 from pages.login_page import LoginPage
 
-@pytest.fixture(scope="function")
-def page() -> Page:
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        context = browser.new_context()
-        page = context.new_page()
-        yield page
-        browser.close()
 
 def pytest_addoption(parser):
     parser.addoption("--env", default="dev")
@@ -74,7 +64,7 @@ def spend_api(env):
 
 @pytest.fixture
 def page_factory(page, base_url):
-    def _factory(PageClass: Type[BasePage]) -> BasePage:
+    def _factory(PageClass: type[BasePage]) -> BasePage:
         return PageClass(page, base_url)
 
     return _factory
@@ -99,4 +89,5 @@ def created_spend(spend_api, valid_spend):
     assert response.status_code == HTTPStatus.CREATED
     spend_response: SpendResponse = SpendResponse.model_validate(response.json())
     yield spend_response
-    spend_api.delete_spend(spend_response.id)
+    response_delete: Response = spend_api.delete_spend(spend_response.id)
+    assert response_delete.status_code == HTTPStatus.OK
