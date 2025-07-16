@@ -6,8 +6,8 @@ from models.spend_create_request import SpendRequest
 
 class SpendClient(ApiClient):
 
-    def __init__(self, env):
-        super().__init__(env)
+    def __init__(self, env: str, token: str):
+        super().__init__(env, token)
 
     def create_spend(self, spend: SpendRequest) -> Response:
         return self.session.post("/api/spends/add", json=spend.model_dump())

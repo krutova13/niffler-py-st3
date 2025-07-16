@@ -44,7 +44,6 @@ poetry run playwright install chromium
 ```
 USERNAME=your_test_user
 PASSWORD=your_test_password
-TOKEN=your_test_token
 ```
 
 ### 4. Конфигурация окружений

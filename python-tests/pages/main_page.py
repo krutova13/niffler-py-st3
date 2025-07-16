@@ -29,12 +29,22 @@ class MainPage(BasePage):
         self.amount_cells = page.locator('td.css-1snpvth')
         self.description_cells = page.locator('td.css-1delpu4')
         self.date_cells = page.locator('td.css-s5nwpc')
+        self.statistics_text = page.locator("#legend-container li")
 
     def goto(self):
         self.page.goto(f"{self.base_url}{self.URL}")
 
     def open_profile(self):
         self.header.open_profile()
+
+    def open_friends(self):
+        self.header.open_friends()
+
+    def open_all_people(self):
+        self.header.open_all_people()
+
+    def sigh_out(self):
+        self.header.sign_out()
 
     def create_new_spending(self):
         self.header.click_new_spending()
@@ -79,6 +89,11 @@ class MainPage(BasePage):
         amounts: list[str] = self.amount_cells.all_inner_texts()
         formatted_expected: str = _format_amount(expected)
         return amounts and amounts[-1] == f"{formatted_expected} {currency}"
+
+    def is_statistics_text(self, expected_category: str, expected_amount: str, currency: str = RUB_SYMBOL) -> bool:
+        self.statistics_text.wait_for(timeout=3000)
+        formatted_expected: str = _format_amount(expected_amount)
+        return f"{expected_category} {formatted_expected} {currency}" in self.statistics_text.all_inner_texts()
 
 
 def _format_amount(amount: str) -> str:

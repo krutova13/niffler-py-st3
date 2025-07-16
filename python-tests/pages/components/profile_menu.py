@@ -1,9 +1,12 @@
 from playwright.sync_api import Page, Locator
 
+from pages.components.logout_dialog import LogoutDialog
+
 
 class ProfileMenu:
     def __init__(self, page: Page):
         self.page = page
+        self.logout_dialog = LogoutDialog(page)
         self.menu: Locator = page.locator('div.MuiPopover-paper[role="presentation"] ul[role="menu"]')
         self.profile_link: Locator = page.locator('a[href="/profile"]')
         self.friends_link: Locator = page.locator('a[href="/people/friends"]')
@@ -24,3 +27,4 @@ class ProfileMenu:
 
     def sign_out(self):
         self.sign_out_btn.click()
+        self.logout_dialog.click_logout()

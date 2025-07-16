@@ -8,6 +8,9 @@ class SpendingFormPage(BasePage):
         super().__init__(page, base_url)
         self.page = page
         self.amount_input: Locator = page.locator('input#amount')
+        self.chips = page.locator('div.MuiChip-root')
+        self.amount_error = page.locator('input#amount + .input__helper-text')
+        self.category_error = page.locator('input#category + .input__helper-text')
         self.currency_dropdown: Locator = page.locator('div[role="combobox"][id="currency"]')
         self.currency_option: Locator = page.locator('ul[role="listbox"] li[role="option"]')
         self.category_input: Locator = page.locator('input#category')
@@ -17,6 +20,17 @@ class SpendingFormPage(BasePage):
         self.description_input: Locator = page.locator('input#description')
         self.cancel_btn: Locator = page.locator('button#cancel')
         self.save_btn: Locator = page.locator('button#save')
+
+    def is_chips_visible(self, chips_name: str) -> bool:
+        self.chips.first.wait_for(timeout=3000)
+        chip = self.chips.filter(has_text=chips_name)
+        return chip.is_visible()
+
+    def get_amount_error_text(self):
+        return self.amount_error.inner_text()
+
+    def get_category_error_text(self):
+        return self.category_error.inner_text()
 
     def fill_amount(self, amount: str):
         self.amount_input.fill(amount)

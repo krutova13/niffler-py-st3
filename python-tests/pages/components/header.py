@@ -24,6 +24,18 @@ class Header:
         self.profile_btn.click()
         self.menu.go_to_profile()
 
+    def open_friends(self):
+        self.profile_btn.click()
+        self.menu.go_to_friends()
+
+    def open_all_people(self):
+        self.profile_btn.click()
+        self.menu.go_to_all_people()
+
+    def sign_out(self):
+        self.profile_btn.click()
+        self.menu.sign_out()
+
     def is_title_visible(self) -> bool:
         self.title.wait_for(timeout=3000)
         return self.title.is_visible()
