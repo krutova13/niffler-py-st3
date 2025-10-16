@@ -7,17 +7,22 @@ from clients.category_client import CategoryClient
 from databases.spend_db import SpendDb
 from models.category_get_response import CategoryGetResponse
 from models.spend_create_request import SpendRequest
+from models.user_credentials import UserCredentials
 from pages.main_page import MainPage
+from pages.people_page import PeoplePage
+from pages.profile_page import ProfilePage
+from pages.spending.add_spending_page import AddSpendingPage
+from pages.spending.edit_spending_page import EditSpendingPage
 
 dotenv.load_dotenv()
 
 import pytest
 from requests import Response
+import json
 from clients.auth_client import AuthClient
 from clients.spend_client import SpendClient
 from config.config_provider import ConfigProvider
 from models.spend_create_response import SpendResponse, Category
-from pages.base_page import BasePage
 from pages.login_page import LoginPage
 
 
@@ -51,22 +56,18 @@ def spend_db_url(env):
 
 
 @pytest.fixture
-def page_factory(page, base_url):
-    def _factory(PageClass: type[BasePage], custom_url=None) -> BasePage:
-        use_url = custom_url if custom_url is not None else base_url
-        return PageClass(page, use_url)
-
-    return _factory
+def login_page(page, auth_url) -> LoginPage:
+    return LoginPage(page, auth_url)
 
 
 @pytest.fixture(scope="session")
-def test_user() -> tuple:
-    return os.getenv("USERNAME"), os.getenv("PASSWORD")
+def user_credentials() -> UserCredentials:
+    return UserCredentials(username=os.getenv("USERNAME"), password=os.getenv("PASSWORD"))
 
 
 @pytest.fixture(scope="session", autouse=True)
-def register(env, test_user: tuple):
-    username, password = test_user
+def register(env, user_credentials: UserCredentials):
+    username, password = user_credentials.username, user_credentials.password
     api = AuthClient(env)
     token: str = api.get_xsrf_token()
     response: Response = api.register(username, password, token)
@@ -76,21 +77,82 @@ def register(env, test_user: tuple):
     api.session.close()
 
 
+@pytest.fixture(scope="session")
+def storage_state_path(tmp_path_factory) -> str:
+    return str(tmp_path_factory.mktemp("state") / "auth.json")
+
+
+@pytest.fixture(scope="session")
+def auth_storage_state(browser, auth_url, user_credentials: UserCredentials, storage_state_path: str):
+    context = browser.new_context()
+    page = context.new_page()
+
+    login_page_local = LoginPage(page, auth_url)
+    login_page_local.goto()
+    login_page_local.login(user_credentials.username, user_credentials.password)
+    login_page_local.get_id_token()
+
+    context.storage_state(path=storage_state_path)
+    context.close()
+
+    return storage_state_path
+
+
 @pytest.fixture
-def auth(page, register, page_factory, test_user: tuple) -> str:
-    username, password = test_user
-    login_page: LoginPage = page_factory(LoginPage, auth_url)
-    login_page.goto()
-    login_page.login(username, password)
-
-    return login_page.get_id_token()
+def auth_context(browser, auth_storage_state: str):
+    context = browser.new_context(storage_state=auth_storage_state)
+    yield context
+    context.close()
 
 
 @pytest.fixture
-def main_page(auth, page_factory, frontend_url):
-    main_page: MainPage = page_factory(MainPage, frontend_url)
-    main_page.goto()
-    return main_page
+def auth_page(auth_context):
+    page = auth_context.new_page()
+    yield page
+    page.close()
+
+
+@pytest.fixture
+def login_page_auth(auth_page, auth_url) -> LoginPage:
+    return LoginPage(auth_page, auth_url)
+
+
+@pytest.fixture
+def main_page(auth_page, base_url):
+    page_obj = MainPage(auth_page, base_url)
+    page_obj.goto()
+    return page_obj
+
+
+@pytest.fixture
+def profile_page(auth_page, base_url):
+    return ProfilePage(auth_page, base_url)
+
+
+@pytest.fixture
+def people_page(auth_page, base_url):
+    return PeoplePage(auth_page, base_url)
+
+
+@pytest.fixture
+def add_spending_page(auth_page, base_url):
+    return AddSpendingPage(auth_page, base_url)
+
+
+@pytest.fixture
+def edit_spending_page(auth_page, base_url):
+    return EditSpendingPage(auth_page, base_url)
+
+
+@pytest.fixture
+def auth(auth_storage_state: str, auth_url) -> str:
+    with open(auth_storage_state, 'r') as f:
+        state = json.load(f)
+    for item in state.get("origins", []):
+        for kv in item.get("localStorage", []):
+            if kv.get("name") == "id_token":
+                return kv.get("value")
+    raise RuntimeError("id_token not found in storage_state")
 
 
 @pytest.fixture
