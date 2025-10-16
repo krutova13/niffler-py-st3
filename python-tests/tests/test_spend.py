@@ -5,16 +5,16 @@ from pages.spending.edit_spending_page import EditSpendingPage
 
 @Pages.main_page
 @TestData.spends("spend_data")
-def test_valid_statistics(page_factory, main_page, spends):
+def test_valid_statistics(page_factory, main_page, test_spend):
     assert main_page.is_statistics_text(
-        expected_category=spends.category.name,
-        expected_amount=spends.amount
+        expected_category=test_spend.category.name,
+        expected_amount=test_spend.amount
     )
 
 
 @Pages.main_page
 @TestData.spends("spend_data")
-def test_edit_spending_amount(page_factory, main_page, spends):
+def test_edit_spending_amount(page_factory, main_page, test_spend):
     amount: str = "1000"
     main_page.edit_spending()
     edit_spending: EditSpendingPage = page_factory(EditSpendingPage)
@@ -25,18 +25,18 @@ def test_edit_spending_amount(page_factory, main_page, spends):
 
 @Pages.main_page
 @TestData.spends("spend_data")
-def test_edit_spending_currency(page_factory, main_page, spends):
+def test_edit_spending_currency(page_factory, main_page, test_spend):
     currency: str = "$"
     main_page.edit_spending()
     edit_spending: EditSpendingPage = page_factory(EditSpendingPage)
     edit_spending.select_currency(currency)
     edit_spending.save()
-    assert main_page.is_last_spending_amount(expected=spends.amount, currency=currency)
+    assert main_page.is_last_spending_amount(expected=test_spend.amount, currency=currency)
 
 
 @Pages.main_page
 @TestData.spends("spend_data")
-def test_edit_spending_category(page_factory, main_page, spends):
+def test_edit_spending_category(page_factory, main_page, test_spend):
     category: str = "Развлечения"
     main_page.edit_spending()
     edit_spending: EditSpendingPage = page_factory(EditSpendingPage)
@@ -47,10 +47,10 @@ def test_edit_spending_category(page_factory, main_page, spends):
 
 @Pages.main_page
 @TestData.spends("spend_data")
-def test_search_spending(page_factory, main_page, spends):
+def test_search_spending(page_factory, main_page, test_spend):
     not_valid_search: str = "999qwe"
-    main_page.search(spends.category.name)
-    assert main_page.is_last_spending_category(spends.category.name)
+    main_page.search(test_spend.category.name)
+    assert main_page.is_last_spending_category(test_spend.category.name)
     main_page.clear_search()
     main_page.search(not_valid_search)
     assert main_page.is_no_spendings_placeholder_visible()
@@ -78,7 +78,7 @@ def test_create_new_spending(page_factory, main_page):
 
 @Pages.main_page
 @TestData.spends("spend_data")
-def test_delete_all_spendings(page_factory, main_page, spends):
+def test_delete_all_spendings(page_factory, main_page, test_spend):
     main_page.select_all_spendings()
     main_page.delete_selected()
     main_page.confirm_delete()

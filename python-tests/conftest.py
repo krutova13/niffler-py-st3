@@ -4,6 +4,7 @@ from http import HTTPStatus
 import dotenv
 
 from clients.category_client import CategoryClient
+from databases.spend_db import SpendDb
 from models.category_get_response import CategoryGetResponse
 from models.spend_create_request import SpendRequest
 from pages.main_page import MainPage
@@ -15,7 +16,7 @@ from requests import Response
 from clients.auth_client import AuthClient
 from clients.spend_client import SpendClient
 from config.config_provider import ConfigProvider
-from models.spend_create_response import SpendResponse
+from models.spend_create_response import SpendResponse, Category
 from pages.base_page import BasePage
 from pages.login_page import LoginPage
 
@@ -44,6 +45,11 @@ def auth_url(env):
     return ConfigProvider(env).get(key="base_auth_url")
 
 
+@pytest.fixture(scope="session")
+def spend_db_url(env):
+    return ConfigProvider(env).get(key="spend_db_url")
+
+
 @pytest.fixture
 def page_factory(page, base_url):
     def _factory(PageClass: type[BasePage], custom_url=None) -> BasePage:
@@ -64,7 +70,9 @@ def register(env, test_user: tuple):
     api = AuthClient(env)
     token: str = api.get_xsrf_token()
     response: Response = api.register(username, password, token)
+
     yield response
+
     api.session.close()
 
 
@@ -88,36 +96,63 @@ def main_page(auth, page_factory, frontend_url):
 @pytest.fixture
 def spends_client(env, auth):
     api = SpendClient(env, auth)
+
     yield api
+
     api.session.close()
 
 
 @pytest.fixture
 def category_client(env, auth):
     api = CategoryClient(env, auth)
+
     yield api
+
     api.session.close()
 
 
+@pytest.fixture(scope="session")
+def spend_db(spend_db_url):
+    return SpendDb(spend_db_url)
+
+
 @pytest.fixture(params=[])
-def category_name(request, category_client) -> str:
+def category_data(request, category_client) -> Category:
     category_name: str = request.param
+
     response: Response = category_client.get_categories()
     assert response.status_code == HTTPStatus.OK
+
     categories: list[CategoryGetResponse] = [CategoryGetResponse.model_validate(item) for item in response.json()]
-    category_names = [category.name for category in categories]
-    if category_name not in category_names:
-        category_client.create_category(category_name)
-    return category_name
+    category = next((c for c in categories if c.name == category_name), None)
+
+    if not category:
+        create_resp = category_client.create_category(category_name)
+        assert create_resp.status_code == HTTPStatus.OK
+        category = Category.model_validate(create_resp.json())
+
+    return category
+
+
+@pytest.fixture
+def test_category(spend_db, category_data: Category):
+    yield category_data.name
+
+    spend_db.delete_category(category_data.id)
+    assert spend_db.get_category_by_id(category_data.id) is None
 
 
 @pytest.fixture(params=[])
-def spends(request, spends_client):
+def test_spend(request, spends_client, spend_db):
     response: Response = spends_client.create_spend(request.getfixturevalue(request.param))
     assert response.status_code == HTTPStatus.CREATED
     spend_response: SpendResponse = SpendResponse.model_validate(response.json())
+
     yield spend_response
-    spends_client.delete_spend(spend_response.id)
+
+    spend_db.delete_spend(spend_response.id)
+    spend_db.delete_category(spend_response.category.id)
+    assert spend_db.get_spend_by_id(spend_response.id) is None
 
 
 @pytest.fixture

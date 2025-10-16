@@ -62,6 +62,7 @@ class ProfilePage(BasePage):
         self.category_chips.filter(has_text=category).first.wait_for(state="visible", timeout=3000)
 
     def get_categories(self) -> list[str]:
+        self.categories_title.wait_for(state="visible", timeout=3000)
         return self.category_chips.all_inner_texts()
 
     def is_switch_on(self) -> bool:

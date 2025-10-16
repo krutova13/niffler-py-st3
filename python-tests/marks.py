@@ -6,8 +6,8 @@ class Pages:
 
 
 class TestData:
-    category = lambda x: pytest.mark.parametrize("category_name", [x], indirect=True)
+    category = lambda x: pytest.mark.parametrize("category_data", [x], indirect=True)
     spends = lambda x: pytest.mark.parametrize(
-        "spends", [x], indirect=True,
+        "test_spend", [x], indirect=True,
         ids=lambda param: getattr(param, "description", str(param))
     )
