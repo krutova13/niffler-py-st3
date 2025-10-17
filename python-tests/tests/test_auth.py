@@ -17,6 +17,6 @@ def test_login_failure(login_page, user_credentials):
 
 
 @Pages.main_page
-def test_logout(main_page, login_page_auth):
+def test_logout(main_page, logout_page):
     main_page.sigh_out()
-    assert login_page_auth.is_header_visible()
+    assert logout_page.is_header_visible()

@@ -1,13 +1,13 @@
 from requests import Response
 
-from config.config import Server
+from config.server_config import Server
 from session.base_session import BaseSession
 
 
 class AuthClient:
 
     def __init__(self, env):
-        self.session = BaseSession(base_url=Server(env).base_auth_url)
+        self.session = BaseSession(base_url=Server(env).auth_url)
 
     def get_xsrf_token(self) -> str:
         response = self.session.get("/register")

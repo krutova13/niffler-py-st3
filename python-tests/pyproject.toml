@@ -16,6 +16,7 @@ curlify = "^3.0.0"
 pydantic = "^2.11.7"
 sqlmodel = "^0.0.24"
 psycopg2-binary = "^2.9.11"
+allure-pytest = "^2.15.0"
 
 [tool.ruff]
 select = ["E", "F"]

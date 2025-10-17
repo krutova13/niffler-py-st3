@@ -1,8 +1,7 @@
-from config.config_provider import ConfigProvider
+from pydantic import BaseModel
 
 
-class Server:
-    def __init__(self, env: str):
-        self.config = ConfigProvider(env)
-        self.base_api_url = self.config.get("base_api_url")
-        self.base_auth_url = self.config.get("base_auth_url")
+class Config(BaseModel):
+    frontend_url: str
+    gateway_url: str
+    spend_db_url: str

@@ -1,12 +1,12 @@
 from requests import Response
 
-from config.config import Server
+from config.server_config import Server
 from session.base_session import BaseSession
 
 
 class ApiClient:
     def __init__(self, env: str, token: str):
-        self.session = BaseSession(base_url=Server(env).base_api_url, token=token)
+        self.session = BaseSession(base_url=Server(env).gateway_url, token=token)
 
     def request(
             self,

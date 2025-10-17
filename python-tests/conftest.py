@@ -1,9 +1,12 @@
 import os
 from http import HTTPStatus
 
+import allure
 import dotenv
+from allure_commons.types import AttachmentType
 
 from clients.category_client import CategoryClient
+from config.config import Config
 from databases.spend_db import SpendDb
 from models.category_get_response import CategoryGetResponse
 from models.spend_create_request import SpendRequest
@@ -36,28 +39,14 @@ def env(request):
 
 
 @pytest.fixture(scope="session")
-def base_url(env):
-    return ConfigProvider(env).get(key="base_ui_url")
-
-
-@pytest.fixture(scope="session")
-def frontend_url(env):
-    return ConfigProvider(env).get(key="base_ui_url")
-
-
-@pytest.fixture(scope="session")
-def auth_url(env):
-    return ConfigProvider(env).get(key="base_auth_url")
-
-
-@pytest.fixture(scope="session")
-def spend_db_url(env):
-    return ConfigProvider(env).get(key="spend_db_url")
-
-
-@pytest.fixture
-def login_page(page, auth_url) -> LoginPage:
-    return LoginPage(page, auth_url)
+def configs(env) -> Config:
+    config_instance = Config(
+        frontend_url=ConfigProvider(env).get(key="frontend_url"),
+        gateway_url=ConfigProvider(env).get(key="gateway_url"),
+        spend_db_url=ConfigProvider(env).get(key="spend_db_url")
+    )
+    allure.attach(config_instance.model_dump_json(indent=2), name="envs.json", attachment_type=AttachmentType.JSON)
+    return config_instance
 
 
 @pytest.fixture(scope="session")
@@ -83,11 +72,11 @@ def storage_state_path(tmp_path_factory) -> str:
 
 
 @pytest.fixture(scope="session")
-def auth_storage_state(browser, auth_url, user_credentials: UserCredentials, storage_state_path: str):
+def auth_storage_state(browser, configs, user_credentials: UserCredentials, storage_state_path: str):
     context = browser.new_context()
     page = context.new_page()
 
-    login_page_local = LoginPage(page, auth_url)
+    login_page_local = LoginPage(page, configs.frontend_url)
     login_page_local.goto()
     login_page_local.login(user_credentials.username, user_credentials.password)
     login_page_local.get_id_token()
@@ -113,39 +102,44 @@ def auth_page(auth_context):
 
 
 @pytest.fixture
-def login_page_auth(auth_page, auth_url) -> LoginPage:
-    return LoginPage(auth_page, auth_url)
+def login_page(configs, page) -> LoginPage:
+    return LoginPage(page, configs.frontend_url)
 
 
 @pytest.fixture
-def main_page(auth_page, base_url):
-    page_obj = MainPage(auth_page, base_url)
+def logout_page(configs, auth_page) -> LoginPage:
+    return LoginPage(auth_page, configs.frontend_url)
+
+
+@pytest.fixture
+def main_page(configs, auth_page):
+    page_obj = MainPage(auth_page, configs.frontend_url)
     page_obj.goto()
     return page_obj
 
 
 @pytest.fixture
-def profile_page(auth_page, base_url):
-    return ProfilePage(auth_page, base_url)
+def profile_page(configs, auth_page):
+    return ProfilePage(auth_page, configs.frontend_url)
 
 
 @pytest.fixture
-def people_page(auth_page, base_url):
-    return PeoplePage(auth_page, base_url)
+def people_page(configs, auth_page):
+    return PeoplePage(auth_page, configs.frontend_url)
 
 
 @pytest.fixture
-def add_spending_page(auth_page, base_url):
-    return AddSpendingPage(auth_page, base_url)
+def add_spending_page(configs, auth_page):
+    return AddSpendingPage(auth_page, configs.frontend_url)
 
 
 @pytest.fixture
-def edit_spending_page(auth_page, base_url):
-    return EditSpendingPage(auth_page, base_url)
+def edit_spending_page(configs, auth_page):
+    return EditSpendingPage(auth_page, configs.frontend_url)
 
 
 @pytest.fixture
-def auth(auth_storage_state: str, auth_url) -> str:
+def auth(auth_storage_state: str) -> str:
     with open(auth_storage_state, 'r') as f:
         state = json.load(f)
     for item in state.get("origins", []):
@@ -174,8 +168,8 @@ def category_client(env, auth):
 
 
 @pytest.fixture(scope="session")
-def spend_db(spend_db_url):
-    return SpendDb(spend_db_url)
+def spend_db(configs):
+    return SpendDb(configs.spend_db_url)
 
 
 @pytest.fixture(params=[])
