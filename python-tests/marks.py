@@ -11,3 +11,7 @@ class TestData:
         "test_spend", [x], indirect=True,
         ids=lambda param: getattr(param, "description", str(param))
     )
+    page_info = lambda x: pytest.mark.parametrize(
+        "page_info", x,
+        ids=lambda param: f"page={param.page}_size={param.size}"
+    )

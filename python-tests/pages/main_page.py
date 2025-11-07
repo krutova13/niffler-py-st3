@@ -43,7 +43,7 @@ class MainPage(BasePage):
     def open_all_people(self):
         self.header.open_all_people()
 
-    def sigh_out(self):
+    def sign_out(self):
         self.header.sign_out()
 
     def create_new_spending(self):
@@ -52,6 +52,8 @@ class MainPage(BasePage):
     def search(self, text: str):
         self.search_input.fill(text)
         self.search_input.press("Enter")
+        # Ждём обновления таблицы после поиска
+        self.page.wait_for_timeout(500)
 
     def clear_search(self):
         self.clear_button.click()
@@ -109,4 +111,4 @@ def _format_amount(amount: str) -> str:
 def _is_last_spending_entity(entity: Locator, expected: str) -> bool:
     entity.first.wait_for(timeout=3000)
     entities: list[str] = entity.all_inner_texts()
-    return entities and entities[-1] == expected
+    return len(entities) > 0 and entities[-1] == expected
