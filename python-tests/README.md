@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**Комплексный тестовый фреймворк для Niffler** - приложения для учета финансов
+**Тестовый фреймворк для приложения Niffler**
 
 [![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/)
 [![Poetry](https://img.shields.io/badge/poetry-managed-blue.svg)](https://python-poetry.org/)
@@ -198,7 +198,7 @@ def test_create_spending(main_page, add_spending_page):
 ### Настройка за 3 шага:
 
 1. **Включить GitHub Pages:** Settings → Pages → Source: `gh-pages`
-2. **Настроить права:** Settings → Actions → Read and write permissions ✅
+2. **Настроить права:** Settings → Actions → Read and write permissions
 3. **Push:**
    ```bash
    git add .github/workflows/ python-tests/
