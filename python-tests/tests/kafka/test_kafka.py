@@ -17,7 +17,7 @@ from utils.waiters import wait_until_timeout
 @pytest.mark.kafka
 class TestAuthRegistrationKafkaTest:
     @allure.title("Сообщение с пользователем публикуется в Kafka после успешной регистрации")
-    @allure.story(Story.kafka_messaging)
+    @allure.story(Story.produced_messaging)
     @allure.tag("kafka", "messaging")
     def test_message_should_be_produced_to_kafka_after_successful_registration(
             self,
@@ -48,7 +48,7 @@ class TestAuthRegistrationKafkaTest:
             assert user_from_db is not None, f"Пользователь {username} не найден в БД"
 
     @allure.title("После отправки в Kafka сообщения с пользователем в БД создается запись")
-    @allure.story(Story.kafka_messaging)
+    @allure.story(Story.registration_messages)
     @allure.tag("kafka", "messaging")
     def test_user_registration_message_should_be_consumed_by_kafka(
             self,
@@ -68,7 +68,7 @@ class TestAuthRegistrationKafkaTest:
             assert user_from_db.currency == 'RUB'
 
     @allure.title("После отправки в Kafka n сообщений в БД создается n записей")
-    @allure.story(Story.kafka_messaging)
+    @allure.story(Story.registration_messages)
     @allure.tag("kafka", "messaging")
     @pytest.mark.parametrize('user_count', [10])
     def test_multiple_registration_messages_should_be_consumed_by_kafka(
@@ -94,7 +94,7 @@ class TestAuthRegistrationKafkaTest:
             assert [user.username for user in all_users_db] == added_username
 
     @allure.title("После отправки дублирующего сообщения в БД не создается повторная запись")
-    @allure.story(Story.kafka_messaging)
+    @allure.story(Story.registration_messages)
     @allure.tag("kafka", "messaging")
     def test_send_to_kafka_duplicate_user_registration_message(
             self,
@@ -114,7 +114,7 @@ class TestAuthRegistrationKafkaTest:
             assert user_from_db[0].username == username
 
     @allure.title("Сообщения обрабатываются в порядке их отправки")
-    @allure.story(Story.kafka_messaging)
+    @allure.story(Story.produced_messaging)
     @allure.tag("kafka", "messaging")
     def test_messages_processed_in_order(
             self,
@@ -138,7 +138,7 @@ class TestAuthRegistrationKafkaTest:
                 assert user.username == usernames[i], f"Expected {usernames[i]}, got {user.username}"
 
     @allure.title("Сообщения с различными валютами корректно обрабатываются")
-    @allure.story(Story.kafka_messaging)
+    @allure.story(Story.produced_messaging)
     @allure.tag("kafka", "messaging")
     @pytest.mark.parametrize('currency', ['RUB', 'USD', 'EUR'])
     def test_message_with_different_currencies(
