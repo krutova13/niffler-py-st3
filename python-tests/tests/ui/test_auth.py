@@ -32,12 +32,9 @@ def test_login_failure(login_page, user_credentials):
 @allure.title("Выход из системы")
 @pytest.mark.usefixtures("register")
 def test_logout(browser, configs, user_credentials):
-    """Тест выхода из системы - использует отдельный контекст."""
-    # Create separate context for logout test to not affect session auth_context
     context = browser.new_context()
     page = context.new_page()
     
-    # Login first
     from pages.login_page import LoginPage
     from pages.main_page import MainPage
     
@@ -48,12 +45,9 @@ def test_logout(browser, configs, user_credentials):
     main_page = MainPage(page, configs.FRONTEND_URL)
     page.wait_for_url(f"{configs.FRONTEND_URL}/main", timeout=5000)
     
-    # Now logout
     main_page.sign_out()
     
-    # Verify we're on login page
     assert login_page.is_header_visible()
     
-    # Cleanup
     page.close()
     context.close()
