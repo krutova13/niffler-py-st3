@@ -1,0 +1,51 @@
+[tool.poetry]
+package-mode = false
+name = "python-tests"
+version = "0.1.0"
+description = "Niffler python tests"
+authors = ["avartemova <avartemova@mts.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+pytest = "^8.4.0"
+playwright = ">=1.53.0,<2.0.0"
+pytest-playwright = "^0.7.0"
+python-dotenv = "^1.1.1"
+curlify = "^3.0.0"
+pydantic = "^2.11.7"
+pydantic-settings = "^2.0.0"
+sqlmodel = "^0.0.24"
+psycopg2-binary = "^2.9.11"
+allure-pytest = "^2.15.0"
+confluent-kafka = "^2.0.0"
+authlib = "^1.3.0"
+pkce = "^1.0.3"
+requests-toolbelt = "^1.0.0"
+grpcio = "^1.50.0"
+grpcio-tools = "^1.50.0"
+faker = "^30.0.0"
+
+[tool.pytest.ini_options]
+markers = [
+    "api: marks tests as API tests (deselect with '-m \"not api\"')",
+    "ui: marks tests as UI tests (deselect with '-m \"not ui\"')",
+    "kafka: marks tests as Kafka integration tests",
+    "grpc: marks tests as gRPC tests",
+    "soap: marks tests as SOAP API tests",
+    "user_management: marks tests related to user management",
+    "friends_management: marks tests related to friends management",
+    "integration: marks tests as integration tests",
+    "boundary: marks boundary value tests",
+]
+
+[tool.ruff]
+select = ["E", "F"]
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.4.4"
+pytest-xdist = "^3.5.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
